@@ -1,0 +1,49 @@
+h1 {
+  text-align: center;
+}
+
+body {
+  background-repeat: repeat-y;
+  background-color: black;
+  background-repeat: repeat;
+}
+
+
+background-image {
+  filter: blur(8px);
+  -webkit-filter: blur(8px);
+}
+
+
+#mainBox {
+  width : 750px;
+  height: 1000px;
+  background-color: white;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 25px;
+  padding-top: 25px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+
+
+}
+
+h1 {
+  font-family: 'Dancing Script', cursive;
+  color: purple;
+}
+
+#firstWhite {
+  color:white;
+}
+
+#logo {
+  position: fixed;
+  height:150;
+  text-align: center;
+  bottom: 35px;
+    width: 100%;
+}
+
+
