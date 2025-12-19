@@ -4,46 +4,325 @@ h1 {
 
 body {
   background-repeat: repeat-y;
-  background-color: black;
+  background-color: #000011;
   background-repeat: repeat;
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
+body.character-mode {
+  background-color: black;
+}
 
-background-image {
+body.character-mode::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: inherit;
+  background-size: cover;
+  background-position: center;
   filter: blur(8px);
   -webkit-filter: blur(8px);
+  z-index: -1;
+  opacity: 0.3;
 }
 
+/* Space Animation Sidebars */
+#spaceAnimation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+#leftSidebar, #rightSidebar {
+  position: fixed;
+  top: 0;
+  width: calc((100% - 900px) / 2);
+  min-width: 150px;
+  height: 100%;
+  background: linear-gradient(to bottom, #000011, #000033);
+  overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+  #leftSidebar, #rightSidebar {
+    width: 100px;
+  }
+}
+
+@media (max-width: 1000px) {
+  #leftSidebar, #rightSidebar {
+    display: none;
+  }
+}
+
+#leftSidebar {
+  left: 0;
+}
+
+#rightSidebar {
+  right: 0;
+}
+
+/* Stars Animation */
+.stars {
+  position: absolute;
+  width: 100%;
+  height: 200%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+    radial-gradient(2px 2px at 60px 70px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 50px 50px, #fff, transparent),
+    radial-gradient(1px 1px at 80px 10px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 90px 40px, #eee, transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 160px 30px, #fff, transparent),
+    radial-gradient(2px 2px at 10px 90px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 40px 20px, #fff, transparent),
+    radial-gradient(2px 2px at 110px 60px, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1px 1px at 150px 10px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 30px 70px, #eee, transparent);
+  background-repeat: repeat;
+  background-size: 180px 200px;
+  animation: sparkle 4s linear infinite;
+  opacity: 0.9;
+}
+
+@keyframes sparkle {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100px);
+  }
+}
+
+/* Flying Saucer Animation */
+.flying-saucer {
+  position: absolute;
+  font-size: 40px;
+  animation: flyAcross 8s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+#saucerLeft {
+  left: -50px;
+  animation: flyLeftToRight 10s linear infinite;
+}
+
+#saucerRight {
+  right: -50px;
+  animation: flyRightToLeft 12s linear infinite;
+  animation-delay: 2s;
+}
+
+@keyframes flyLeftToRight {
+  0% {
+    top: 20%;
+    left: -50px;
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    top: 50%;
+    transform: translateX(0) rotate(180deg);
+  }
+  100% {
+    top: 80%;
+    left: calc(100% + 50px);
+    transform: translateX(0) rotate(360deg);
+  }
+}
+
+@keyframes flyRightToLeft {
+  0% {
+    top: 80%;
+    right: -50px;
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    top: 50%;
+    transform: translateX(0) rotate(-180deg);
+  }
+  100% {
+    top: 20%;
+    right: calc(100% + 50px);
+    transform: translateX(0) rotate(-360deg);
+  }
+}
 
 #mainBox {
-  width : 750px;
-  height: 1000px;
-  background-color: white;
+  width : 90%;
+  max-width: 900px;
+  min-height: 1000px;
+  background-color: rgba(255, 255, 255, 0.95);
   margin-left: auto;
   margin-right: auto;
-  padding-left: 25px;
-  padding-top: 25px;
+  padding: 30px;
   margin-top: 20px;
   margin-bottom: 20px;
-
-
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
 }
 
 h1 {
   font-family: 'Dancing Script', cursive;
   color: purple;
+  text-align: center;
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+h3 {
+  color: #555;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
 #firstWhite {
-  color:white;
+  color: black;
+}
+
+#txtName {
+  width: 300px;
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+}
+
+input[type="button"] {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+input[type="button"]:hover {
+  background-color: #45a049;
+}
+
+input[type="button"][style*="background-color: #9C27B0"]:hover {
+  background-color: #7B1FA2 !important;
+}
+
+#filterSection {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+.filterBtn {
+  padding: 8px 16px;
+  margin: 5px;
+  font-size: 14px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.filterBtn:hover {
+  background-color: #0b7dda;
+}
+
+#characterInfo {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+#characterInfo p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+#characterInfo a {
+  color: #2196F3;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#characterInfo a:hover {
+  text-decoration: underline;
+}
+
+#episodesList {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e8f5e9;
+  border-radius: 8px;
+}
+
+#episodesList ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#episodesList li {
+  padding: 8px;
+  margin: 5px 0;
+  background-color: white;
+  border-radius: 5px;
+  border-left: 4px solid #4CAF50;
+}
+
+#locationDetails {
+  margin-top: 20px;
+}
+
+#locationInfoBox {
+  padding: 15px;
+  background-color: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #2196F3;
+}
+
+#locationInfoBox p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+#profile img {
+  display: block;
+  margin: 20px auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 #logo {
   position: fixed;
-  height:150;
+  height: 150px;
   text-align: center;
   bottom: 35px;
-    width: 100%;
+  width: 100%;
+  z-index: 1000;
+}
+
+#logo img {
+  opacity: 0.8;
 }
 
 

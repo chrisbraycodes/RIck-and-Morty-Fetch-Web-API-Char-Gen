@@ -12,68 +12,283 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&display=swap" rel="stylesheet">
     <script>
-      //var idAvailable = false;
+      let currentCharacter = null;
+      let currentLocation = null;
+      let hasSearched = false;
+
+      function displayCharacter(character) {
+        currentCharacter = character;
+        hasSearched = true;
+        $("#firstWhite").css("color", "black");
+        
+        // Show character background, keep space animation visible
+        $("body").addClass("character-mode");
+        $("body").css("background-image", `url('${character.image}')`);
+        
+        $("#realName").html(character.name);
+        $("#status").html(character.status);
+        $("#species").html(character.species);
+        $("#gender").html(character.gender);
+        $("#origin").html(`<a href="#" onclick="showLocationDetails('${character.origin.url}'); return false;">${character.origin.name}</a>`);
+        $("#location").html(`<a href="#" onclick="showLocationDetails('${character.location.url}'); return false;">${character.location.name}</a>`);
+        $("#profile").html(`<img src="${character.image}" alt="profile shot" style="width:300px; height:300px; border-radius: 10px;">`);
+
+        // Load episodes
+        loadEpisodes(character.episode);
+        
+        // Load location details if available
+        if(character.origin.url) {
+          loadLocationInfo(character.origin.url, 'origin');
+        }
+      }
+
       function showData()
       {
         console.clear();
-        var name = $("#txtName").val();
-
-        $("#lblName").html(name);
-
-
-        fetch(`https://rickandmortyapi.com/api/character/${name}`)
-    .then(response=>{
-      return response.json();
-    }).then(json=>{
-      //var realName = value.results.name;
-      //$("#realName").html(realName);
-
-      if(name !== undefined && $.isNumeric(name) && name > 0 && name < 827) {
-          $("#idError").html(`Id ${name} is a Valid Id!`);
-          $("#idError").css("color", "green");
-          $("#firstWhite").css("color", "black");
-          //idAvailable = true;
-        } else {
-
-          $("#idError").html("Id not valid please enter a number between 1 and 826.");
+        var input = $("#txtName").val().trim();
+        
+        if(input === "" || input.length === 0) {
+          $("#idError").html("Please enter a character name.");
           $("#idError").css("color", "red");
-          $("#firstWhite").css("color", "white");
-         // idAvailable = false;
+          return;
         }
 
-      console.log(json);
-      $("#realName").html(json.name);
-      $("#status").html(json.status);
-      $("#species").html(json.species);
-      $("#gender").html(json.gender);
-      $("#origin").html(json.origin.name);
-      $("#profile").html(`<img src="${json.image}" alt="profile shot" width:300px height:300px>`)
-       $("body").css("background-image", `url('${json.image}')`);
-    });
+        $("#lblName").html(input);
+        $("#idError").html(`Searching for: ${input}...`);
+        $("#idError").css("color", "blue");
+        $("#episodesList").html("");
+        $("#locationDetails").html("");
+
+        // Search by name only
+        var apiUrl = `https://rickandmortyapi.com/api/character/?name=${encodeURIComponent(input)}`;
+
+        fetch(apiUrl)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Character not found');
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Handle array of characters
+            var character = data.results ? data.results[0] : null;
+            
+            if (!character) {
+              $("#idError").html("Character not found. Try a different name.");
+              $("#idError").css("color", "red");
+              return;
+            }
+
+            $("#idError").html(`Found: ${character.name}`);
+            $("#idError").css("color", "green");
+            displayCharacter(character);
+          })
+          .catch(error => {
+            $("#idError").html("Character not found. Try a different name.");
+            $("#idError").css("color", "red");
+            $("#firstWhite").css("color", "white");
+            console.error('Error:', error);
+          });
+      }
+
+      function getRandomCharacter() {
+        // Get total character count first, then random ID
+        fetch('https://rickandmortyapi.com/api/character')
+          .then(response => response.json())
+          .then(data => {
+            const totalCharacters = data.info.count;
+            const randomId = Math.floor(Math.random() * totalCharacters) + 1;
+            
+            $("#lblName").html("Random");
+            $("#idError").html("Loading random character...");
+            $("#idError").css("color", "blue");
+            $("#episodesList").html("");
+            $("#locationDetails").html("");
+
+            return fetch(`https://rickandmortyapi.com/api/character/${randomId}`);
+          })
+          .then(response => response.json())
+          .then(character => {
+            $("#idError").html(`Random character: ${character.name}`);
+            $("#idError").css("color", "green");
+            displayCharacter(character);
+          })
+          .catch(error => {
+            $("#idError").html("Error loading random character.");
+            $("#idError").css("color", "red");
+            console.error('Error:', error);
+          });
+      }
+
+      function loadEpisodes(episodeUrls) {
+        if (!episodeUrls || episodeUrls.length === 0) return;
+        
+        $("#episodesList").html("<h3>Episodes:</h3><ul id='episodesUl'></ul>");
+        
+        // Fetch all episodes (limit to first 10 for performance)
+        var episodesToFetch = episodeUrls.slice(0, 10);
+        var episodePromises = episodesToFetch.map(url => fetch(url).then(r => r.json()));
+        
+        Promise.all(episodePromises)
+          .then(episodes => {
+            var episodesHtml = "";
+            episodes.forEach(ep => {
+              episodesHtml += `<li><strong>${ep.episode}:</strong> ${ep.name} (${ep.air_date})</li>`;
+            });
+            if (episodeUrls.length > 10) {
+              episodesHtml += `<li><em>...and ${episodeUrls.length - 10} more episodes</em></li>`;
+            }
+            $("#episodesUl").html(episodesHtml);
+          })
+          .catch(error => {
+            console.error('Error loading episodes:', error);
+            $("#episodesList").html("<p>Unable to load episodes.</p>");
+          });
+      }
+
+      function showLocationDetails(locationUrl) {
+        if (!locationUrl || locationUrl === "") {
+          $("#locationDetails").html("<p>Location information not available.</p>");
+          return;
+        }
+        loadLocationInfo(locationUrl, 'clicked');
+      }
+
+      function loadLocationInfo(locationUrl, source) {
+        if (!locationUrl || locationUrl === "") return;
+        
+        fetch(locationUrl)
+          .then(response => response.json())
+          .then(location => {
+            currentLocation = location;
+            var locationHtml = `
+              <div id="locationInfoBox">
+                <h3>Location Details</h3>
+                <p><strong>Name:</strong> ${location.name}</p>
+                <p><strong>Type:</strong> ${location.type}</p>
+                <p><strong>Dimension:</strong> ${location.dimension}</p>
+                ${location.residents && location.residents.length > 0 ? 
+                  `<p><strong>Residents:</strong> ${location.residents.length} characters</p>` : ''}
+              </div>
+            `;
+            $("#locationDetails").html(locationHtml);
+          })
+          .catch(error => {
+            console.error('Error loading location:', error);
+            $("#locationDetails").html("<p>Unable to load location details.</p>");
+          });
+      }
+
+      function filterByStatus(status) {
+        // Clear previous results
+        $("#lblName").html("");
+        $("#idError").html("");
+        $("#episodesList").html("");
+        $("#locationDetails").html("");
+        
+        $("#idError").html(`Loading random ${status} character...`);
+        $("#idError").css("color", "blue");
+        
+        // First, get the total count to handle pagination
+        var apiUrl = `https://rickandmortyapi.com/api/character/?status=${status}`;
+        
+        fetch(apiUrl)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('No characters found');
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.results && data.results.length > 0) {
+              // Pick a random character from the first page
+              var randomIndex = Math.floor(Math.random() * data.results.length);
+              var character = data.results[randomIndex];
+              
+              // If there are more pages, fetch a random page to get more variety
+              if (data.info && data.info.pages > 1) {
+                var randomPage = Math.floor(Math.random() * data.info.pages) + 1;
+                return fetch(`https://rickandmortyapi.com/api/character/?status=${status}&page=${randomPage}`)
+                  .then(response => response.json())
+                  .then(pageData => {
+                    if (pageData.results && pageData.results.length > 0) {
+                      var randomIndex = Math.floor(Math.random() * pageData.results.length);
+                      return pageData.results[randomIndex];
+                    }
+                    return character;
+                  })
+                  .catch(() => character); // Fallback to first page character if error
+              }
+              return character;
+            } else {
+              throw new Error('No characters found');
+            }
+          })
+          .then(character => {
+            if (character) {
+              $("#idError").html(`Random ${status} character`);
+              $("#idError").css("color", "green");
+              displayCharacter(character);
+            } else {
+              throw new Error('No character selected');
+            }
+          })
+          .catch(error => {
+            console.error('Error filtering:', error);
+            $("#idError").html(`No characters found with status: ${status}`);
+            $("#idError").css("color", "red");
+            $("#firstWhite").css("color", "white");
+          });
       }
 </script>
   </head>
 
   <body>
 
+    <div id="spaceAnimation">
+      <div id="leftSidebar">
+        <div class="stars"></div>
+        <div class="flying-saucer" id="saucerLeft">🛸</div>
+      </div>
+      <div id="rightSidebar">
+        <div class="stars"></div>
+        <div class="flying-saucer" id="saucerRight">🛸</div>
+      </div>
+    </div>
+
     <div id = "mainBox">
-      Enter a number in the box below to learn about a rick and morty character. It can be 1 through 826. <br>
-      <input type="text" id = "txtName"/><br>
-      <input type ="button" value= "submit number" onclick="showData();" />
+      <h2>Rick and Morty Character Explorer</h2>
+      <p>Enter a character name to search:</p>
+      <input type="text" id = "txtName" placeholder="Enter character name..." onkeypress="if(event.key === 'Enter') showData();"/><br><br>
+      <input type ="button" value= "Search Character" onclick="showData();" />
+      <input type ="button" value= "Random Character" onclick="getRandomCharacter();" style="margin-left: 10px; background-color: #9C27B0;" />
+      
+      <div id="filterSection">
+        <h3>Filter by Status:</h3>
+        <button class="filterBtn" onclick="filterByStatus('Alive')">Alive</button>
+        <button class="filterBtn" onclick="filterByStatus('Dead')">Dead</button>
+        <button class="filterBtn" onclick="filterByStatus('unknown')">Unknown</button>
+      </div>
+      
       <br> <label id = "idError"></label>
       <div id = "firstWhite">
-      You entered: "<label type="text" id="lblName"> </label> "
-      this id is associated with: 
-      <br>
+      <p>You searched: "<label type="text" id="lblName"> </label>"</p>
       <h1><label type="text" id ="realName"></label></h1>
       <br>
       <div type ="image" id ="profile" height= 300 width=300>
       </div>
       <br>
-      Status: <label type="text" id ="status"></label><br>
-      Species: <label type="text" id ="species"></label><br>
-      Gender: <label type="text" id ="gender"></label><br>
-      Origin: <label type="text" id ="origin"></label><br>
+      <div id="characterInfo">
+        <p><strong>Status:</strong> <label type="text" id ="status"></label></p>
+        <p><strong>Species:</strong> <label type="text" id ="species"></label></p>
+        <p><strong>Gender:</strong> <label type="text" id ="gender"></label></p>
+        <p><strong>Origin:</strong> <label type="text" id ="origin"></label></p>
+        <p><strong>Current Location:</strong> <label type="text" id ="location"></label></p>
+      </div>
+      <br>
+      <div id="episodesList"></div>
+      <br>
+      <div id="locationDetails"></div>
       </div>
       <div id = "logo">
       <img src="img/csumb.jpg" alt="CSUMB Logo" width= "150" height= "150">
