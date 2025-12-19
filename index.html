@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>replit</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+
+     <link rel="preconnect" href="https://fonts.googleapis.com"> 
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&display=swap" rel="stylesheet">
+    <script>
+      //var idAvailable = false;
+      function showData()
+      {
+        console.clear();
+        var name = $("#txtName").val();
+
+        $("#lblName").html(name);
+
+
+        fetch(`https://rickandmortyapi.com/api/character/${name}`)
+    .then(response=>{
+      return response.json();
+    }).then(json=>{
+      //var realName = value.results.name;
+      //$("#realName").html(realName);
+
+      if(name !== undefined && $.isNumeric(name) && name > 0 && name < 827) {
+          $("#idError").html(`Id ${name} is a Valid Id!`);
+          $("#idError").css("color", "green");
+          $("#firstWhite").css("color", "black");
+          //idAvailable = true;
+        } else {
+
+          $("#idError").html("Id not valid please enter a number between 1 and 826.");
+          $("#idError").css("color", "red");
+          $("#firstWhite").css("color", "white");
+         // idAvailable = false;
+        }
+
+      console.log(json);
+      $("#realName").html(json.name);
+      $("#status").html(json.status);
+      $("#species").html(json.species);
+      $("#gender").html(json.gender);
+      $("#origin").html(json.origin.name);
+      $("#profile").html(`<img src="${json.image}" alt="profile shot" width:300px height:300px>`)
+       $("body").css("background-image", `url('${json.image}')`);
+    });
+      }
+</script>
+  </head>
+
+  <body>
+
+    <div id = "mainBox">
+      Enter a number in the box below to learn about a rick and morty character. It can be 1 through 826. <br>
+      <input type="text" id = "txtName"/><br>
+      <input type ="button" value= "submit number" onclick="showData();" />
+      <br> <label id = "idError"></label>
+      <div id = "firstWhite">
+      You entered: "<label type="text" id="lblName"> </label> "
+      this id is associated with: 
+      <br>
+      <h1><label type="text" id ="realName"></label></h1>
+      <br>
+      <div type ="image" id ="profile" height= 300 width=300>
+      </div>
+      <br>
+      Status: <label type="text" id ="status"></label><br>
+      Species: <label type="text" id ="species"></label><br>
+      Gender: <label type="text" id ="gender"></label><br>
+      Origin: <label type="text" id ="origin"></label><br>
+      </div>
+      <div id = "logo">
+      <img src="img/csumb.jpg" alt="CSUMB Logo" width= "150" height= "150">
+      </div>
+     </div>   
+  </body>
+</html>

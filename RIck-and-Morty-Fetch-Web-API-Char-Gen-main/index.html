@@ -186,6 +186,10 @@
         $("#episodesList").html("");
         $("#locationDetails").html("");
         
+        $("#idError").html(`Loading random ${status} character...`);
+        $("#idError").css("color", "blue");
+        
+        // First, get the total count to handle pagination
         var apiUrl = `https://rickandmortyapi.com/api/character/?status=${status}`;
         
         fetch(apiUrl)
@@ -197,20 +201,41 @@
           })
           .then(data => {
             if (data.results && data.results.length > 0) {
-              // Display first character from filtered results
-              var character = data.results[0];
-              $("#idError").html(`Showing 1 of ${data.results.length} characters with status: ${status}`);
+              // Pick a random character from the first page
+              var randomIndex = Math.floor(Math.random() * data.results.length);
+              var character = data.results[randomIndex];
+              
+              // If there are more pages, fetch a random page to get more variety
+              if (data.info && data.info.pages > 1) {
+                var randomPage = Math.floor(Math.random() * data.info.pages) + 1;
+                return fetch(`https://rickandmortyapi.com/api/character/?status=${status}&page=${randomPage}`)
+                  .then(response => response.json())
+                  .then(pageData => {
+                    if (pageData.results && pageData.results.length > 0) {
+                      var randomIndex = Math.floor(Math.random() * pageData.results.length);
+                      return pageData.results[randomIndex];
+                    }
+                    return character;
+                  })
+                  .catch(() => character); // Fallback to first page character if error
+              }
+              return character;
+            } else {
+              throw new Error('No characters found');
+            }
+          })
+          .then(character => {
+            if (character) {
+              $("#idError").html(`Random ${status} character`);
               $("#idError").css("color", "green");
               displayCharacter(character);
             } else {
-              $("#idError").html(`No characters found with status: ${status}`);
-              $("#idError").css("color", "red");
-              $("#firstWhite").css("color", "white");
+              throw new Error('No character selected');
             }
           })
           .catch(error => {
             console.error('Error filtering:', error);
-            $("#idError").html("Error filtering characters or no results found.");
+            $("#idError").html(`No characters found with status: ${status}`);
             $("#idError").css("color", "red");
             $("#firstWhite").css("color", "white");
           });
