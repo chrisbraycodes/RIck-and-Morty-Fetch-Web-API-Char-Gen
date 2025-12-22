@@ -5,11 +5,16 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors *;"
+          "value": "frame-src *; frame-ancestors *;"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
         }
       ]
     }
   ]
 }
+
 
 
